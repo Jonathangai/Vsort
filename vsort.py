@@ -14,6 +14,7 @@ class Sort:
         self.data["merge"] = self.merge()
         self.sort_length = len(self.data)
         self.time_length = max([len(self.data[item]) for item in self.data])
+        self.equalLength()
 
     def insert(self):
         li = self.value[:]
@@ -86,17 +87,25 @@ class Sort:
         mergeSort(li, [])
         return data
 
+    def equalLength(self):
+        for item in self.data:
+            while len(self.data[item]) < self.time_length:
+                self.data[item].append(self.data[item][-1])
+
     def draw(self):
         def ani(time):
             for idx, item in enumerate(self.data):
-                ax[idx].clear()
-                ax[idx].bar([i for i in range(self.data_length)],
-                            [i for i in self.data[item][time]])
+                for id1, rect in enumerate(rects[idx]):
+                    rect.set_height(self.data[item][time][id1])
 
         fig, ax = plt.subplots(self.sort_length)
+        rects = [0 for i in range(self.sort_length)]
+        for idx, item in enumerate(self.data):
+            rects[idx] = ax[idx].bar([i for i in range(self.data_length)],
+                                     [i for i in self.data[item][0]])
         anim = animation.FuncAnimation(fig, ani,
                                        frames=range(self.time_length),
-                                       interval=1, repeat=False)
+                                       interval=5, repeat=False)
         anim.save('vsort.mp4', fps=30)
         plt.show()
 
