@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from matplotlib import animation
 import math
+import random
 
 
 class Sort:
@@ -12,6 +13,7 @@ class Sort:
         self.data["insert"] = self.insert()
         self.data["bubble"] = self.bubble()
         self.data["merge"] = self.merge()
+        self.data["quick"], self.data["randomized quick"] = self.quick()
         self.sort_length = len(self.data)
         self.time_length = max([len(self.data[item]) for item in self.data])
         self.equalLength()
@@ -84,6 +86,44 @@ class Sort:
         mergeSort(li, [])
         return data
 
+    def quick(self) -> list:
+        def partition(li, p, r, data):
+            x = li[r]
+            i = p - 1
+            for j in range(p, r):
+                if li[j] >= x:
+                    i += 1
+                    li[i], li[j], = li[j], li[i]
+                data.append(li[:])
+            li[i + 1], li[r] = li[r], li[i + 1]
+            data.append(li[:])
+            return i + 1
+
+        def quickSort(li, p, r, data):
+            if p < r:
+                q = partition(li, p, r, data)
+                quickSort(li, p, q - 1, data)
+                quickSort(li, q + 1, r, data)
+
+        def randomPartition(li, p, r, data):
+            i = random.randint(p, r)
+            li[r], li[i] = li[i], li[r]
+            return partition(li, p, r, data)
+
+        def randomQuickSort(li, p, r, data):
+            if p < r:
+                q = randomPartition(li, p, r, data)
+                randomQuickSort(li, p, q - 1, data)
+                randomQuickSort(li, q + 1, r, data)
+
+        li = self.value[:]
+        data = []
+        quickSort(li, 0, len(li) - 1, data)
+        li = self.value[:]
+        random_data = []
+        randomQuickSort(li, 0, len(li) - 1, random_data)
+        return data, random_data
+
     def equalLength(self):
         for item in self.data:
             while len(self.data[item]) < self.time_length:
@@ -97,6 +137,7 @@ class Sort:
 
         self.equalLength()
         fig, ax = plt.subplots(self.sort_length)
+        fig.tight_layout(rect=[0, 0.03, 1, 0.95])
         rects = [0 for i in range(self.sort_length)]
         for idx, item in enumerate(self.data):
             ax[idx].set_title(item)
@@ -116,5 +157,5 @@ class Sort:
         self.anim.save("vsort.mp4", fps=60)
 
 
-sort = Sort(list(range(20)))
+sort = Sort(list(range(80)))
 sort.draw()
