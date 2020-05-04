@@ -1,7 +1,6 @@
 from matplotlib import pyplot as plt
 from matplotlib import animation
 import math
-from random import randint
 
 
 class Sort:
@@ -80,8 +79,9 @@ class Sort:
             return real_position
 
         temp = self.value[:]
+        li = self.value[:]
         data = []
-        mergeSort(self.value, [])
+        mergeSort(li, [])
         return data
 
     def equalLength(self):
@@ -89,23 +89,32 @@ class Sort:
             while len(self.data[item]) < self.time_length:
                 self.data[item].append(self.data[item][-1])
 
-    def draw(self):
+    def draw(self, inter=10, show=True):
         def update(time):
             for idx, item in enumerate(self.data):
                 for id1, rect in enumerate(rects[idx]):
                     rect.set_height(self.data[item][time][id1])
 
+        self.equalLength()
         fig, ax = plt.subplots(self.sort_length)
         rects = [0 for i in range(self.sort_length)]
         for idx, item in enumerate(self.data):
+            ax[idx].set_title(item)
+            ax[idx].axis("off")
             rects[idx] = ax[idx].bar([i for i in range(self.data_length)],
                                      [i for i in self.data[item][0]])
         anim = animation.FuncAnimation(fig, update,
                                        frames=range(self.time_length),
-                                       interval=1, repeat=False)
-        anim.save('vsort.mp4', fps=60)
-        plt.show()
+                                       interval=inter, repeat=False)
+        anim._start()
+        self.anim = anim
+        if show:
+            plt.show()
+
+    def save(self):
+        self.draw(1, show=False)
+        self.anim.save("vsort.mp4", fps=60)
 
 
-sort = Sort([randint(0, 100) for i in range(20)])
+sort = Sort(list(range(20)))
 sort.draw()
