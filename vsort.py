@@ -2,11 +2,32 @@ from matplotlib import pyplot as plt
 from matplotlib import animation
 import math
 import random
+import sys
+import getopt
 
 
 class Sort:
+    """ This is a class for animation of the sorting algorithms.
+
+    Attributes:
+        value         (list): The unsorted list.
+        data_length    (int): The length of the unsorted list.
+        data          (dict): The data of steps of each sorting algorithms.
+        sort_length    (int): The number of sorting algorithms.
+        time_length    (int): The maximum number of steps needed using
+                              different sorting algorithms.
+        anim (FuncAnimation): A matplotlib.animation.FuncAnimation object
+                              that is the animation of sorting algorithms.
+    """
 
     def __init__(self, unsorted):
+        """
+        Initiates the Sort class
+
+        Parameters:
+            unsorted  (list): The unsorted list.
+        """
+
         self.value = unsorted
         self.data_length = len(unsorted)
         self.data = {}
@@ -19,6 +40,8 @@ class Sort:
         self.equalLength()
 
     def insert(self) -> list:
+        """The method to return the steps to sort with insert sort."""
+
         li = self.value[:]
         data = [li[:]]
         for i in range(1, len(li)):
@@ -30,6 +53,8 @@ class Sort:
         return data
 
     def bubble(self) -> list:
+        """The method to return the steps to sort with bubble sort."""
+
         li = self.value[:]
         data = [li[:]]
         for i in reversed(range(0, len(li))):
@@ -40,8 +65,12 @@ class Sort:
         return data
 
     def merge(self) -> list:
+        """The method to return the steps to sort with merge sort."""
+
         # Weird argument for the ease of visualization.
         def mergeSort(li, pos):
+            """The function that sorts the list recursively."""
+
             if len(li) > 1:
                 left, right = li[:len(li) // 2], li[len(li) // 2:]
                 mergeSort(left, [*pos, 0])
@@ -70,6 +99,11 @@ class Sort:
                     j += 1
 
         def position(pos) -> int:
+            """
+            The function that returns position of the element based on the
+            list of numbers.
+            """
+
             t = self.data_length
             real_position = 0
             for item in pos:
@@ -87,7 +121,14 @@ class Sort:
         return data
 
     def quick(self) -> list:
+        """
+        The method to return the steps to sort with quick sort and quick
+        quick with random pivots.
+        """
+
         def partition(li, p, r, data):
+            """The function that partitions the list by a pivot"""
+
             x = li[r]
             i = p - 1
             for j in range(p, r):
@@ -100,17 +141,29 @@ class Sort:
             return i + 1
 
         def quickSort(li, p, r, data):
+            """
+            The function that recursively sorts the list using partition
+            function recursively.
+            """
+
             if p < r:
                 q = partition(li, p, r, data)
                 quickSort(li, p, q - 1, data)
                 quickSort(li, q + 1, r, data)
 
         def randomPartition(li, p, r, data):
+            """The function that partitions the list by a random pivot"""
+
             i = random.randint(p, r)
             li[r], li[i] = li[i], li[r]
             return partition(li, p, r, data)
 
         def randomQuickSort(li, p, r, data):
+            """
+            The function that recursively sorts the list using random
+            partition function recursively.
+            """
+
             if p < r:
                 q = randomPartition(li, p, r, data)
                 randomQuickSort(li, p, q - 1, data)
@@ -125,12 +178,33 @@ class Sort:
         return data, random_data
 
     def equalLength(self):
+        """
+        The method adds sorted list to the end of data, so each of the
+        entries would have the same number of steps.
+        """
+
         for item in self.data:
             while len(self.data[item]) < self.time_length:
                 self.data[item].append(self.data[item][-1])
 
     def draw(self, inter=10, show=True):
+        """
+        The method draws the animation of sorting algorithms using
+        matplotlib.
+
+        Parameters:
+            inter (int): The number of milliseconds between each frame
+                         in the animation.
+            show (bool): A boolean value that determines if the animation
+                         is shown.
+        """
+
+        if not float(inter).is_integer() or inter < 0:
+            inter = 10
+
         def update(time):
+            """The function that updates each frame."""
+
             for idx, item in enumerate(self.data):
                 for id1, rect in enumerate(rects[idx]):
                     rect.set_height(self.data[item][time][id1])
@@ -153,9 +227,55 @@ class Sort:
             plt.show()
 
     def save(self):
+        """The method that saves the animation as an MP4 file."""
+
         self.draw(1, show=False)
         self.anim.save("vsort.mp4", fps=60)
 
 
-sort = Sort(list(range(80)))
-sort.draw()
+def main(argv):
+    """
+    The main function that creates a animation based on the command line
+    arguments.
+
+    Parameters:
+        argv: The list of strings of the command line options.
+    """
+
+    def help():
+        """The function that prints the help message."""
+
+        print("Usage: vsort.py [-shr] [-i <interval>]")
+        print()
+        print("Sort 50 bars from largest to smallest using different")
+        print()
+        print("optional arguments:")
+        print("  -h    show this help message and exit")
+        print("  -r    the bars are reversed instead of randomized")
+        print("  -s    save the animation as a MP4 file")
+        print("  -i    takes an integer input that is the length "
+              "between each frame (default: 10)")
+        sys.exit()
+
+    unsorted = [random.randint(1, 100) for _ in range(50)]
+    interval = 10
+    try:
+        opts, args = getopt.getopt(argv, "shi:r")
+    except getopt.GetoptError:
+        help()
+    for opt, arg in opts:
+        if opt == "-h":
+            help()
+        if opt == "-i":
+            interval = int(arg)
+    op = [item[0] for item in opts]
+    if "-r" in op:
+        unsorted = list(range(0, 50))
+    sort = Sort(unsorted)
+    sort.draw(interval)
+    if "-s" in op:
+        sort.save()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
